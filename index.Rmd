@@ -1,15 +1,113 @@
 ---
-title: "R Lightning Talk!"
-author: "Kyle Chung"
-date: "`r Sys.Date()`"
-output: html_document
+title: "R Lightning Talk! @DSC 2015"
+subtitle: "Taste the power of Rcpp"
+author: 
+    name: "Kyle Chung"
+    affiliation: "Trend Micro, Data Scientist"
+    
+    email: "kylechun9@gmail.com"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+    html_document
 ---
 
-# tt21e
-## 1w12e12e
-### qweqwe
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(cache=FALSE)
+```
+
+
+### What exactly is R?
++ It's a program written in R, C++, and Fortran.
++ Let's take a look at its source files.
 
 ```{r}
+library(data.table)
+library(stringr)
+
+# get all file extensions in R source code
+all_src_files <- list.files("./R-3.2.1/src/", recursive=TRUE, full.names=TRUE)
+all_ext <- str_extract(all_src_files, "\\.[a-zA-Z]+$")
+file_counts <- as.data.table(sort(table(all_ext), decreasing=TRUE)[1:10],
+                             keep.rownames=TRUE)
+``` 
+
+
+### Distribution of source file counts in R
+
+```{r}
+library(ggvis)
+
+file_counts %>% ggvis(~reorder(V1, -V2), ~V2) %>% layer_bars() %>%
+    add_axis('x', title="Source Type") %>% add_axis('y', title="File Count")
+``` 
+
++ Top-ten file types:
+    + Rd: document file
+    + **.R: R source**, of course
+    + **.C: C source**
+    + .mo: binary data file
+    + .po: gettext file, about programming language translation
+    + **.h: header file for C**
+    + .afm: font file
+    + .in: usually template config file for some macro preprocessor
+    + .win: same above, but for Windows
+    + **.f: Fortran source**
+
+
+```{r, cache=TRUE}
+# now focus on only source type files
+src_ext <- c('c', 'h', 'R', 'f')
+srcfiles <- list()
+for ( ext in src_ext )
+    srcfiles[[ext]] <- grep(sprintf("\\.%s$", ext), all_src_files, value=TRUE)
+ext_dist <- sapply(srcfiles, length)
+round(ext_dist / sum(ext_dist), 2)
+```
+
+As you can see, **R is heavily writen in C.** Indeed, most primitive functions are written in C code. Vectorization is implemented in C code. The speedy part of R is written in C. (And that's why it is speedy.)
+
+For example, ``+`` (the add function) is a primitive function written in C, vectorized.
+```{r}
+`+` # no R source code printed cause it is written in C
+```
+
+In addition to distribution of *number of files* in R source, we can take a further look into the distribution of *number of lines* in each source type. 
+
+```{r, cache=TRUE}
+# this part of script takes advantage of unix wc tool so is not portable to Windows
+wc_res <- sapply(srcfiles, function(x) 
+    sum(as.integer(sapply(sprintf("wc -l < %s", x), system, intern=TRUE))))
+round(wc_res / sum(wc_res), 2)
+```
+
+
+### Distribution of source line counts in R
+
+```{r}
+line_counts <- as.data.table(wc_res, keep.rownames=TRUE)
+line_counts %>% ggvis(~rn, ~wc_res) %>% layer_bars() %>%
+    add_axis('x', title="Source Type") %>% add_axis('y', title="Line Count", title_offset=60)
+```
+
+Finally, we've found that **only `r paste0(round(100 * wc_res['R'] / sum(wc_res), 2), '%')` of R source lines is written in R, and `r paste0(round(100 * wc_res['c'] / sum(wc_res), 2), '%')` of it is written by C, and `r paste0(round(100 * wc_res['f'] / sum(wc_res), 2), '%')` Fortran.**
+
+
+### When R is not satisfying your need for speed...
+
++ It's simple. We can write C/C++, which is usually above 10X faster than the equivalent of native R code. 
++ Okay. So **why not just use C++** for everything? Cause your programming time will explode to blow up all your potential performance gain, well, provided that you really can finish the analytic job purely in C++.
++ This kind of high-level / low-level trade-off is happening in any modern analytic tools.
+    + but at least you are capable of trading for such gain in R, which is a very flexible language for analytics
+    + for some other tools you simply CANT do anything to optimize your performance
+
+
+### But writing C/C++ for R is painful
+### Here comes `Rcpp`
+
+
+
+### Example: n-gram generator
+```{r, cache=TRUE}
 library(Rcpp)
 cppFunction('CharacterVector generateNgramHexSequence (CharacterVector hexvector, int ngram) {
     int len = hexvector.size() - (ngram - 1);
@@ -23,4 +121,8 @@ cppFunction('CharacterVector generateNgramHexSequence (CharacterVector hexvector
     return out;
 }')
 ```
+
+
+### Example: moving-window operation
+
 
