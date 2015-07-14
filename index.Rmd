@@ -1,0 +1,26 @@
+---
+title: "R Lightning Talk!"
+author: "Kyle Chung"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# tt21e
+## 1w12e12e
+### qweqwe
+
+```{r}
+library(Rcpp)
+cppFunction('CharacterVector generateNgramHexSequence (CharacterVector hexvector, int ngram) {
+    int len = hexvector.size() - (ngram - 1);
+    CharacterVector out(len);
+    for (int i = 0; i < len; i++) {
+        out(i) = hexvector[i];
+        for (int j = 1; j < ngram; j++) {
+            out(i) += hexvector[i+j];
+        }
+    }
+    return out;
+}')
+```
+
