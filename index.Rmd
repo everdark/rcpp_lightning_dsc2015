@@ -9,6 +9,8 @@ date: '`r format(Sys.time(), "%d %B, %Y")`<br><br><a rel="license" href="http://
 output: html_document
 bibliography: bibliography.bib
 notice: |
+    @Dowle:Short:Lianoglou:Srinivasan
+    @Wickham:2015
     @Hornik:BuchtaLZeileis:2009
 ---
 
