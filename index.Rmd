@@ -1,5 +1,5 @@
 ---
-title: "R Lightning Talk! @DSC 2015"
+title: "R Lightning Talk! \\@DSC 2015"
 subtitle: "Taste the power of Rcpp"
 author: 
     name: "Kyle Chung"
@@ -9,6 +9,7 @@ author:
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
     html_document
+bibliography: bibliography.bib
 ---
 
 ```{r setup, include=FALSE}
@@ -23,6 +24,10 @@ knitr::opts_chunk$set(cache=FALSE)
 ```{r}
 library(data.table)
 library(stringr)
+
+# download R source code if you dont have it yet
+# download.file("http://cran.csie.ntu.edu.tw/src/base/R-3/R-3.2.1.tar.gz", "R-3.2.1.tar.gz")
+# untar("R-3.2.1.tar.gz")
 
 # get all file extensions in R source code
 all_src_files <- list.files("./R-3.2.1/src/", recursive=TRUE, full.names=TRUE)
@@ -95,17 +100,18 @@ Finally, we've found that **only `r paste0(round(100 * wc_res['R'] / sum(wc_res)
 ### When R is not satisfying your need for speed...
 
 + It's simple. We can write C/C++, which is usually above 10X faster than the equivalent of native R code. 
-+ Okay. So **why not just use C++** for everything? Cause your programming time will explode to blow up all your potential performance gain, well, provided that you really can finish the analytic job purely in C++.
++ Okay. So **why not just use C/C++** for everything? 
+    + cause your programming time will explode to blow up all your potential performance gain, well, provided that you really can finish the analytic job purely in C++.
 + This kind of high-level / low-level trade-off is happening in any modern analytic tools.
-    + but at least you are capable of trading for such gain in R, which is a very flexible language for analytics
-    + for some other tools you simply CANT do anything to optimize your performance
+    + but at least you are capable of trading for such gain in R, which is a very flexible language for analytics.
+    + for some other tools you simply CAN'T do anything to speed up your performance.
 
 
 ### But writing C/C++ for R is painful
 ### Here comes `Rcpp`
 
 + What is `Rcpp`?
-    + A library for R to build a more manageble interface between R and its C API, so that users are more easy to write C++ function for their R program.
+    + A library for R [@Eddelbuettel:Francois:2011:JSSOBK:v40i08] to build a more manageble interface between R and its C API, so that users are more easy to write C++ function for their R program.
 
 
 ### Example: n-gram generation
@@ -122,13 +128,25 @@ cppFunction('CharacterVector generateNgramHexSequence (CharacterVector hexvector
         }
     }
     return out;
-}')
+    }')
 ```
 
 
 ### Example: moving-window computing
 
 ```{r, cache=TRUE}
+cppFunction('NumericVector movingCount_
+            (NumericVector tindex, NumericVector dataT, NumericVector dataC, int stepsize) {
+                int n = tindex.size();
+                NumericVector out(n);
+                for (int i = 0; i < n; i++) {
+                    int begin = tindex[i];
+                    int end = begin + stepsize;
+                    NumericVector cnts = dataC[(dataT >= begin) & (dataT < end)];
+                    out(i) = sum(cnts);
+                }
+            return out;
+            }')
 ```
 
 
@@ -150,3 +168,6 @@ cppFunction('
         return out;
     }')
 ```
+
+
+### References

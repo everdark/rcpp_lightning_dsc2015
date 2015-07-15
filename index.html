@@ -69,7 +69,7 @@ img {
 
 
 <div id="header">
-<h1 class="title">R Lightning Talk! <span class="citation">@DSC</span> 2015</h1>
+<h1 class="title">R Lightning Talk! @DSC 2015</h1>
 <h3 class="subtitle"><em>Taste the power of Rcpp</em></h3>
 <h4 class="author"><em>Kyle Chung</em></h4>
 <address class="author_afil">
@@ -88,6 +88,10 @@ Trend Micro, Data Scientist<br><a class="author_email" href="mailto:#"><a href="
 <pre class="r"><code>library(data.table)
 library(stringr)
 
+# download R source code if you dont have it yet
+# download.file(&quot;http://cran.csie.ntu.edu.tw/src/base/R-3/R-3.2.1.tar.gz&quot;, &quot;R-3.2.1.tar.gz&quot;)
+# untar(&quot;R-3.2.1.tar.gz&quot;)
+
 # get all file extensions in R source code
 all_src_files &lt;- list.files(&quot;./R-3.2.1/src/&quot;, recursive=TRUE, full.names=TRUE)
 all_ext &lt;- str_extract(all_src_files, &quot;\\.[a-zA-Z]+$&quot;)
@@ -100,27 +104,27 @@ file_counts &lt;- as.data.table(sort(table(all_ext), decreasing=TRUE)[1:10],
 
 file_counts %&gt;% ggvis(~reorder(V1, -V2), ~V2) %&gt;% layer_bars() %&gt;%
     add_axis('x', title=&quot;Source Type&quot;) %&gt;% add_axis('y', title=&quot;File Count&quot;)</code></pre>
-<p><div id="plot_id801927841-container" class="ggvis-output-container">
-<div id="plot_id801927841" class="ggvis-output"></div>
+<p><div id="plot_id375049190-container" class="ggvis-output-container">
+<div id="plot_id375049190" class="ggvis-output"></div>
 <div class="plot-gear-icon">
 <nav class="ggvis-control">
 <a class="ggvis-dropdown-toggle" title="Controls" onclick="return false;"></a>
 <ul class="ggvis-dropdown">
 <li>
 Renderer: 
-<a id="plot_id801927841_renderer_svg" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id801927841" data-renderer="svg">SVG</a>
+<a id="plot_id375049190_renderer_svg" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id375049190" data-renderer="svg">SVG</a>
  | 
-<a id="plot_id801927841_renderer_canvas" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id801927841" data-renderer="canvas">Canvas</a>
+<a id="plot_id375049190_renderer_canvas" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id375049190" data-renderer="canvas">Canvas</a>
 </li>
 <li>
-<a id="plot_id801927841_download" class="ggvis-download" data-plot-id="plot_id801927841">Download</a>
+<a id="plot_id375049190_download" class="ggvis-download" data-plot-id="plot_id375049190">Download</a>
 </li>
 </ul>
 </nav>
 </div>
 </div>
 <script type="text/javascript">
-var plot_id801927841_spec = {
+var plot_id375049190_spec = {
   "data": [
     {
       "name": ".0/count1/stack2",
@@ -248,7 +252,7 @@ var plot_id801927841_spec = {
   },
   "handlers": null
 };
-ggvis.getPlot("plot_id801927841").parseSpec(plot_id801927841_spec);
+ggvis.getPlot("plot_id375049190").parseSpec(plot_id375049190_spec);
 </script></p>
 <ul>
 <li>Top-ten file types:
@@ -291,27 +295,27 @@ round(wc_res / sum(wc_res), 2)</code></pre>
 <pre class="r"><code>line_counts &lt;- as.data.table(wc_res, keep.rownames=TRUE)
 line_counts %&gt;% ggvis(~rn, ~wc_res) %&gt;% layer_bars() %&gt;%
     add_axis('x', title=&quot;Source Type&quot;) %&gt;% add_axis('y', title=&quot;Line Count&quot;, title_offset=60)</code></pre>
-<p><div id="plot_id901280172-container" class="ggvis-output-container">
-<div id="plot_id901280172" class="ggvis-output"></div>
+<p><div id="plot_id842360951-container" class="ggvis-output-container">
+<div id="plot_id842360951" class="ggvis-output"></div>
 <div class="plot-gear-icon">
 <nav class="ggvis-control">
 <a class="ggvis-dropdown-toggle" title="Controls" onclick="return false;"></a>
 <ul class="ggvis-dropdown">
 <li>
 Renderer: 
-<a id="plot_id901280172_renderer_svg" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id901280172" data-renderer="svg">SVG</a>
+<a id="plot_id842360951_renderer_svg" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id842360951" data-renderer="svg">SVG</a>
  | 
-<a id="plot_id901280172_renderer_canvas" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id901280172" data-renderer="canvas">Canvas</a>
+<a id="plot_id842360951_renderer_canvas" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id842360951" data-renderer="canvas">Canvas</a>
 </li>
 <li>
-<a id="plot_id901280172_download" class="ggvis-download" data-plot-id="plot_id901280172">Download</a>
+<a id="plot_id842360951_download" class="ggvis-download" data-plot-id="plot_id842360951">Download</a>
 </li>
 </ul>
 </nav>
 </div>
 </div>
 <script type="text/javascript">
-var plot_id901280172_spec = {
+var plot_id842360951_spec = {
   "data": [
     {
       "name": ".0/count1/stack2",
@@ -440,7 +444,7 @@ var plot_id901280172_spec = {
   },
   "handlers": null
 };
-ggvis.getPlot("plot_id901280172").parseSpec(plot_id901280172_spec);
+ggvis.getPlot("plot_id842360951").parseSpec(plot_id842360951_spec);
 </script></p>
 <p>Finally, we’ve found that <strong>only 20.09% of R source lines is written in R, and 45.2% of it is written by C, and 27.31% Fortran.</strong></p>
 </div>
@@ -448,11 +452,14 @@ ggvis.getPlot("plot_id901280172").parseSpec(plot_id901280172_spec);
 <h3>When R is not satisfying your need for speed…</h3>
 <ul>
 <li>It’s simple. We can write C/C++, which is usually above 10X faster than the equivalent of native R code.</li>
-<li>Okay. So <strong>why not just use C++</strong> for everything? Cause your programming time will explode to blow up all your potential performance gain, well, provided that you really can finish the analytic job purely in C++.</li>
+<li>Okay. So <strong>why not just use C/C++</strong> for everything?
+<ul>
+<li>cause your programming time will explode to blow up all your potential performance gain, well, provided that you really can finish the analytic job purely in C++.</li>
+</ul></li>
 <li>This kind of high-level / low-level trade-off is happening in any modern analytic tools.
 <ul>
-<li>but at least you are capable of trading for such gain in R, which is a very flexible language for analytics</li>
-<li>for some other tools you simply CANT do anything to optimize your performance</li>
+<li>but at least you are capable of trading for such gain in R, which is a very flexible language for analytics.</li>
+<li>for some other tools you simply CAN’T do anything to speed up your performance.</li>
 </ul></li>
 </ul>
 </div>
@@ -461,6 +468,12 @@ ggvis.getPlot("plot_id901280172").parseSpec(plot_id901280172_spec);
 </div>
 <div id="here-comes-rcpp" class="section level3">
 <h3>Here comes <code>Rcpp</code></h3>
+<ul>
+<li>What is <code>Rcpp</code>?
+<ul>
+<li>A library for R <span class="citation">(Eddelbuettel and Francois 2011)</span> to build a more manageble interface between R and its C API, so that users are more easy to write C++ function for their R program.</li>
+</ul></li>
+</ul>
 </div>
 <div id="example-n-gram-generation" class="section level3">
 <h3>Example: n-gram generation</h3>
@@ -475,10 +488,22 @@ cppFunction('CharacterVector generateNgramHexSequence (CharacterVector hexvector
         }
     }
     return out;
-}')</code></pre>
+    }')</code></pre>
 </div>
 <div id="example-moving-window-computing" class="section level3">
 <h3>Example: moving-window computing</h3>
+<pre class="r"><code>cppFunction('NumericVector movingCount_
+            (NumericVector tindex, NumericVector dataT, NumericVector dataC, int stepsize) {
+                int n = tindex.size();
+                NumericVector out(n);
+                for (int i = 0; i &lt; n; i++) {
+                    int begin = tindex[i];
+                    int end = begin + stepsize;
+                    NumericVector cnts = dataC[(dataT &gt;= begin) &amp; (dataT &lt; end)];
+                    out(i) = sum(cnts);
+                }
+            return out;
+            }')</code></pre>
 </div>
 <div id="example-ad-hoc-data.frame-operation" class="section level3">
 <h3>Example: ad-hoc data.frame operation</h3>
@@ -496,6 +521,10 @@ cppFunction('CharacterVector generateNgramHexSequence (CharacterVector hexvector
         }
         return out;
     }')</code></pre>
+<div class="references">
+<h3>References</h3>
+<p>Eddelbuettel, Dirk, and Romain Francois. 2011. “Rcpp: Seamless R and C++ Integration.” <em>Journal of Statistical Software</em> 40 (8): 1–18. <a href="http://www.jstatsoft.org/v40/i08" class="uri">http://www.jstatsoft.org/v40/i08</a>.</p>
+</div>
 </div>
 
 
