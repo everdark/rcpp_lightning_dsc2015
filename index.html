@@ -79,6 +79,7 @@ Trend Micro, Data Scientist<br><a class="author_email" href="mailto:#"><a href="
 </div>
 
 
+<hr />
 <div id="what-exactly-is-r" class="section level3">
 <h3>What exactly is R?</h3>
 <ul>
@@ -104,27 +105,27 @@ file_counts &lt;- as.data.table(sort(table(all_ext), decreasing=TRUE)[1:10],
 
 file_counts %&gt;% ggvis(~reorder(V1, -V2), ~V2) %&gt;% layer_bars() %&gt;%
     add_axis('x', title=&quot;Source Type&quot;) %&gt;% add_axis('y', title=&quot;File Count&quot;)</code></pre>
-<p><div id="plot_id741138753-container" class="ggvis-output-container">
-<div id="plot_id741138753" class="ggvis-output"></div>
+<p><div id="plot_id367304425-container" class="ggvis-output-container">
+<div id="plot_id367304425" class="ggvis-output"></div>
 <div class="plot-gear-icon">
 <nav class="ggvis-control">
 <a class="ggvis-dropdown-toggle" title="Controls" onclick="return false;"></a>
 <ul class="ggvis-dropdown">
 <li>
 Renderer: 
-<a id="plot_id741138753_renderer_svg" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id741138753" data-renderer="svg">SVG</a>
+<a id="plot_id367304425_renderer_svg" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id367304425" data-renderer="svg">SVG</a>
  | 
-<a id="plot_id741138753_renderer_canvas" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id741138753" data-renderer="canvas">Canvas</a>
+<a id="plot_id367304425_renderer_canvas" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id367304425" data-renderer="canvas">Canvas</a>
 </li>
 <li>
-<a id="plot_id741138753_download" class="ggvis-download" data-plot-id="plot_id741138753">Download</a>
+<a id="plot_id367304425_download" class="ggvis-download" data-plot-id="plot_id367304425">Download</a>
 </li>
 </ul>
 </nav>
 </div>
 </div>
 <script type="text/javascript">
-var plot_id741138753_spec = {
+var plot_id367304425_spec = {
   "data": [
     {
       "name": ".0/count1/stack2",
@@ -252,7 +253,7 @@ var plot_id741138753_spec = {
   },
   "handlers": null
 };
-ggvis.getPlot("plot_id741138753").parseSpec(plot_id741138753_spec);
+ggvis.getPlot("plot_id367304425").parseSpec(plot_id367304425_spec);
 </script></p>
 <ul>
 <li>Top-ten file types:
@@ -504,7 +505,7 @@ system(sprintf(&quot;xxd -g1 %s | head&quot;, samplefile), intern=TRUE) # unix o
 hexdump &lt;- unlist(strsplit(paste(hexdump, collapse=' '), ' '))
 hexdump &lt;- hexdump[hexdump != '']
 str(hexdump)</code></pre>
-<pre><code>##  chr [1:1392760] &quot;3c&quot; &quot;21&quot; &quot;44&quot; &quot;4f&quot; &quot;43&quot; &quot;54&quot; &quot;59&quot; &quot;50&quot; &quot;45&quot; &quot;20&quot; &quot;68&quot; &quot;74&quot; &quot;6d&quot; &quot;6c&quot; ...</code></pre>
+<pre><code>##  chr [1:1392687] &quot;3c&quot; &quot;21&quot; &quot;44&quot; &quot;4f&quot; &quot;43&quot; &quot;54&quot; &quot;59&quot; &quot;50&quot; &quot;45&quot; &quot;20&quot; &quot;68&quot; &quot;74&quot; &quot;6d&quot; &quot;6c&quot; ...</code></pre>
 <p>Then what? Try looping in native R code, which is rather straight forward.</p>
 <pre class="r"><code># first trial: use native R loop (could be terrible for large-scale processing...)
 generateNgramFreqR &lt;- function(x, n) {

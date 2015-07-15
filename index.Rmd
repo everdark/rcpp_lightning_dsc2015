@@ -15,7 +15,7 @@ knitr::opts_chunk$set(cache=FALSE)
 options(width=120)
 ```
 
-
+----------------------
 ### What exactly is R?
 
 + It's a program written in R, C++, and Fortran.
