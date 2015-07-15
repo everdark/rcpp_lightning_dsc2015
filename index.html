@@ -100,27 +100,27 @@ file_counts &lt;- as.data.table(sort(table(all_ext), decreasing=TRUE)[1:10],
 
 file_counts %&gt;% ggvis(~reorder(V1, -V2), ~V2) %&gt;% layer_bars() %&gt;%
     add_axis('x', title=&quot;Source Type&quot;) %&gt;% add_axis('y', title=&quot;File Count&quot;)</code></pre>
-<p><div id="plot_id494348311-container" class="ggvis-output-container">
-<div id="plot_id494348311" class="ggvis-output"></div>
+<p><div id="plot_id801927841-container" class="ggvis-output-container">
+<div id="plot_id801927841" class="ggvis-output"></div>
 <div class="plot-gear-icon">
 <nav class="ggvis-control">
 <a class="ggvis-dropdown-toggle" title="Controls" onclick="return false;"></a>
 <ul class="ggvis-dropdown">
 <li>
 Renderer: 
-<a id="plot_id494348311_renderer_svg" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id494348311" data-renderer="svg">SVG</a>
+<a id="plot_id801927841_renderer_svg" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id801927841" data-renderer="svg">SVG</a>
  | 
-<a id="plot_id494348311_renderer_canvas" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id494348311" data-renderer="canvas">Canvas</a>
+<a id="plot_id801927841_renderer_canvas" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id801927841" data-renderer="canvas">Canvas</a>
 </li>
 <li>
-<a id="plot_id494348311_download" class="ggvis-download" data-plot-id="plot_id494348311">Download</a>
+<a id="plot_id801927841_download" class="ggvis-download" data-plot-id="plot_id801927841">Download</a>
 </li>
 </ul>
 </nav>
 </div>
 </div>
 <script type="text/javascript">
-var plot_id494348311_spec = {
+var plot_id801927841_spec = {
   "data": [
     {
       "name": ".0/count1/stack2",
@@ -248,7 +248,7 @@ var plot_id494348311_spec = {
   },
   "handlers": null
 };
-ggvis.getPlot("plot_id494348311").parseSpec(plot_id494348311_spec);
+ggvis.getPlot("plot_id801927841").parseSpec(plot_id801927841_spec);
 </script></p>
 <ul>
 <li>Top-ten file types:
@@ -462,8 +462,8 @@ ggvis.getPlot("plot_id901280172").parseSpec(plot_id901280172_spec);
 <div id="here-comes-rcpp" class="section level3">
 <h3>Here comes <code>Rcpp</code></h3>
 </div>
-<div id="example-n-gram-generator" class="section level3">
-<h3>Example: n-gram generator</h3>
+<div id="example-n-gram-generation" class="section level3">
+<h3>Example: n-gram generation</h3>
 <pre class="r"><code>library(Rcpp)
 cppFunction('CharacterVector generateNgramHexSequence (CharacterVector hexvector, int ngram) {
     int len = hexvector.size() - (ngram - 1);
@@ -477,8 +477,25 @@ cppFunction('CharacterVector generateNgramHexSequence (CharacterVector hexvector
     return out;
 }')</code></pre>
 </div>
-<div id="example-moving-window-operation" class="section level3">
-<h3>Example: moving-window operation</h3>
+<div id="example-moving-window-computing" class="section level3">
+<h3>Example: moving-window computing</h3>
+</div>
+<div id="example-ad-hoc-data.frame-operation" class="section level3">
+<h3>Example: ad-hoc data.frame operation</h3>
+<pre class="r"><code>cppFunction('
+    NumericVector countAnythingBoundedByTime (NumericVector first, NumericVector last) {
+        int len = first.size();
+        NumericVector out(len);
+        for (int i = 0; i &lt; len; i++) {
+            out(i) = 0;
+            for (int j = 0; j &lt; len; j++) {
+                if (first(j) &lt;= last(i)) {
+                    out(i) += 1;
+                }
+            }
+        }
+        return out;
+    }')</code></pre>
 </div>
 
 

@@ -104,9 +104,12 @@ Finally, we've found that **only `r paste0(round(100 * wc_res['R'] / sum(wc_res)
 ### But writing C/C++ for R is painful
 ### Here comes `Rcpp`
 
++ What is `Rcpp`?
+    + A library for R to build a more manageble interface between R and its C API, so that users are more easy to write C++ function for their R program.
 
 
-### Example: n-gram generator
+### Example: n-gram generation
+
 ```{r, cache=TRUE}
 library(Rcpp)
 cppFunction('CharacterVector generateNgramHexSequence (CharacterVector hexvector, int ngram) {
@@ -123,6 +126,27 @@ cppFunction('CharacterVector generateNgramHexSequence (CharacterVector hexvector
 ```
 
 
-### Example: moving-window operation
+### Example: moving-window computing
+
+```{r, cache=TRUE}
+```
 
 
+### Example: ad-hoc data.frame operation
+
+```{r, cache=TRUE}
+cppFunction('
+    NumericVector countAnythingBoundedByTime (NumericVector first, NumericVector last) {
+        int len = first.size();
+        NumericVector out(len);
+        for (int i = 0; i < len; i++) {
+            out(i) = 0;
+            for (int j = 0; j < len; j++) {
+                if (first(j) <= last(i)) {
+                    out(i) += 1;
+                }
+            }
+        }
+        return out;
+    }')
+```
