@@ -4,24 +4,24 @@ subtitle: "Taste the power of Rcpp"
 author: 
     name: "Kyle Chung"
     affiliation: "Trend Micro, Data Scientist"
-    
     email: "kylechun9@gmail.com"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-output: 
-    html_document
+output: html_document
 bibliography: bibliography.bib
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(cache=FALSE)
+options(width=120)
 ```
 
 
 ### What exactly is R?
+
 + It's a program written in R, C++, and Fortran.
 + Let's take a look at its source files.
 
-```{r}
+```{r file_count}
 library(data.table)
 library(stringr)
 
@@ -39,7 +39,7 @@ file_counts <- as.data.table(sort(table(all_ext), decreasing=TRUE)[1:10],
 
 ### Distribution of source file counts in R
 
-```{r}
+```{r plot_file_count}
 library(ggvis)
 
 file_counts %>% ggvis(~reorder(V1, -V2), ~V2) %>% layer_bars() %>%
@@ -59,7 +59,7 @@ file_counts %>% ggvis(~reorder(V1, -V2), ~V2) %>% layer_bars() %>%
     + **.f: Fortran source**
 
 
-```{r, cache=TRUE}
+```{r source_file_count, cache=TRUE}
 # now focus on only source type files
 src_ext <- c('c', 'h', 'R', 'f')
 srcfiles <- list()
@@ -72,14 +72,14 @@ round(ext_dist / sum(ext_dist), 2)
 As you can see, **R is heavily writen in C.** Indeed, most primitive functions are written in C code. Vectorization is implemented in C code. The speedy part of R is written in C. (And that's why it is speedy.)
 
 For example, ``+`` (the add function) is a primitive function written in C, vectorized.
-```{r}
+```{r print_add}
 `+` # no R source code printed cause it is written in C
 ```
 
 In addition to distribution of *number of files* in R source, we can take a further look into the distribution of *number of lines* in each source type. 
 
-```{r, cache=TRUE}
-# this part of script takes advantage of unix wc tool so is not portable to Windows
+```{r line_count, cache=TRUE}
+# unix only
 wc_res <- sapply(srcfiles, function(x) 
     sum(as.integer(sapply(sprintf("wc -l < %s", x), system, intern=TRUE))))
 round(wc_res / sum(wc_res), 2)
@@ -88,7 +88,7 @@ round(wc_res / sum(wc_res), 2)
 
 ### Distribution of source line counts in R
 
-```{r}
+```{r plot_line_count}
 line_counts <- as.data.table(wc_res, keep.rownames=TRUE)
 line_counts %>% ggvis(~rn, ~wc_res) %>% layer_bars() %>%
     add_axis('x', title="Source Type") %>% add_axis('y', title="Line Count", title_offset=60)
@@ -99,58 +99,140 @@ Finally, we've found that **only `r paste0(round(100 * wc_res['R'] / sum(wc_res)
 
 ### When R is not satisfying your need for speed...
 
-+ It's simple. We can write C/C++, which is usually above 10X faster than the equivalent of native R code. 
++ It's simple. We can write R function in C/C++, which is usually above 10X faster than the equivalent of native R code. 
 + Okay. So **why not just use C/C++** for everything? 
-    + cause your programming time will explode to blow up all your potential performance gain, well, provided that you really can finish the analytic job purely in C++.
+    + cause your *programming time* will explode to blow up all your potential performance gain, well, provided that you really can finish the analytic job purely in C++.
 + This kind of high-level / low-level trade-off is happening in any modern analytic tools.
     + but at least you are capable of trading for such gain in R, which is a very flexible language for analytics.
     + for some other tools you simply CAN'T do anything to speed up your performance.
 
 
 ### But writing C/C++ for R is painful
++ The traditional R API to C/C++ is talking like alien.
+
+
 ### Here comes `Rcpp`
 
 + What is `Rcpp`?
-    + A library for R [@Eddelbuettel:Francois:2011:JSSOBK:v40i08] to build a more manageble interface between R and its C API, so that users are more easy to write C++ function for their R program.
+    + A library for R [@Eddelbuettel:Francois:2011:JSSOBK:v40i08] to build a more manageble API for integrating R and C++, so that users are more easy to write function in C++ to speed up their R program.
+    + It provides *syntax sugar* so that the coding is less like C++ programing and more like R programing. Indeed it becomes something in-between.
++ Usefule resources:
+    + [Rcpp Github page](https://github.com/RcppCore/Rcpp)
+    + [Rcpp website](http://www.rcpp.org)
 
 
-### Example: n-gram generation
+### Example 1: n-gram generation
+
+Imagin you are dealing with hexdump of files and planning to use its n-gram frequency feature. Your input data may look like this: 
+
+```{r ex1:print_hexdump}
+samplefile <- "index.html"
+system(sprintf("xxd -g1 %s | head", samplefile), intern=TRUE) # unix only
+```
+
+We firstly tidy the input to be a long character sequence...
+
+```{r ex1:process_hexdump}
+hexdump <- system(sprintf("xxd -g1 %s | cut -d \" \" -f 2-17", samplefile), intern=TRUE) # unix only
+hexdump <- unlist(strsplit(paste(hexdump, collapse=' '), ' '))
+hexdump <- hexdump[hexdump != '']
+str(hexdump)
+```
+
+Then what? Try looping in native R code, which is rather straight forward.
+
+```{r ex1:r_solution, cache=TRUE}
+# first trial: use native R loop (could be terrible for large-scale processing...)
+generateNgramFreqR <- function(x, n) {
+    len <- length(x) - (n - 1)
+    out <- character(len) # pre-allocate size, very important
+    for ( i in 1:len ) {
+        out[i] <- x[i]
+        if ( n > 1 )
+            for ( j in 1:(n-1) )
+                out[i] <- paste0(out[i], x[i+j])
+    }
+    unlist(as.list(sort(table(out), decreasing=TRUE)))
+}
+system.time(r_res <- generateNgramFreqR(hexdump, 2))
+r_res[1:10]
+```
+
+Or we can use some external library about text mining.
+
+```{r ex1:tau_solution, cache=TRUE, message=FALSE}
+# second trial: use external library
+generateNgramFreqTau <- function(x, n) {
+    require(tau)
+    tau_res <- textcnt(x, n=n, method="string", split="[[:space:]]+")
+    names(tau_res) <- gsub(' ', '', names(tau_res))
+    sort(tau_res, decreasing=TRUE)
+}
+system.time(tau_res <- generateNgramFreqTau(hexdump, 2))
+tau_res[1:10]
+
+# check if the results are eqaul
+identical(tau_res, r_res)
+```
+
+But the performance of the above two solutions are both not satisfying when it comes to large-scale problem.
+
+Now let's try `Rcpp` to see what we could further achieve.
+
+```{r ex1:cpp_solution, cache=TRUE}
+# third trial: use Rcpp to write the function in C++
+library(Rcpp)
+cppFunction('
+    CharacterVector generateNgramFreq (CharacterVector hexvector, int ngram) {
+        int len = hexvector.size() - (ngram - 1);
+        CharacterVector out(len);
+        for (int i = 0; i < len; i++) {
+            out(i) = hexvector[i];
+            for (int j = 1; j < ngram; j++) {
+                out(i) += hexvector[i+j];
+            }
+        }
+        return out;
+    }')
+generateNgramFreq
+generateNgramFreqCpp <- function(x, n)
+    unlist(as.list(sort(table(generateNgramFreq(x, n)), decreasing=TRUE)))
+system.time(cpp_res <- generateNgramFreqCpp(hexdump, 2))
+cpp_res[1:10]
+identical(cpp_res, r_res)
+```
+
+Now it's time to benchmark these solutions to see the performance difference. You'll see that the `Rcpp` solution is above 10X faster than its alternatives. Depends on the scale of your problem such gap could be further enlarged.
+
+```{r ex1:benchmark, cache=TRUE}
+library(microbenchmark)
+microbenchmark(generateNgramFreqR(hexdump, 2),
+               generateNgramFreqTau(hexdump, 2),
+               generateNgramFreqCpp(hexdump, 2), times=10)
+```
+
++ Interested? See the [Microsoft malware classification challenge](https://www.kaggle.com/c/malware-classification)
+
+
+### Example 2: moving-window computing
 
 ```{r, cache=TRUE}
-library(Rcpp)
-cppFunction('CharacterVector generateNgramHexSequence (CharacterVector hexvector, int ngram) {
-    int len = hexvector.size() - (ngram - 1);
-    CharacterVector out(len);
-    for (int i = 0; i < len; i++) {
-        out(i) = hexvector[i];
-        for (int j = 1; j < ngram; j++) {
-            out(i) += hexvector[i+j];
+cppFunction('
+    NumericVector movingCount(NumericVector tindex, NumericVector dataT, NumericVector dataC, int stepsize) {
+        int n = tindex.size();
+        NumericVector out(n);
+        for (int i = 0; i < n; i++) {
+            int begin = tindex[i];
+            int end = begin + stepsize;
+            NumericVector cnts = dataC[(dataT >= begin) & (dataT < end)];
+            out(i) = sum(cnts);
         }
-    }
-    return out;
+        return out;
     }')
 ```
 
 
-### Example: moving-window computing
-
-```{r, cache=TRUE}
-cppFunction('NumericVector movingCount_
-            (NumericVector tindex, NumericVector dataT, NumericVector dataC, int stepsize) {
-                int n = tindex.size();
-                NumericVector out(n);
-                for (int i = 0; i < n; i++) {
-                    int begin = tindex[i];
-                    int end = begin + stepsize;
-                    NumericVector cnts = dataC[(dataT >= begin) & (dataT < end)];
-                    out(i) = sum(cnts);
-                }
-            return out;
-            }')
-```
-
-
-### Example: ad-hoc data.frame operation
+### Example 3: ad-hoc data.frame operation
 
 ```{r, cache=TRUE}
 cppFunction('

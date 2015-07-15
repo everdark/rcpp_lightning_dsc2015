@@ -104,27 +104,27 @@ file_counts &lt;- as.data.table(sort(table(all_ext), decreasing=TRUE)[1:10],
 
 file_counts %&gt;% ggvis(~reorder(V1, -V2), ~V2) %&gt;% layer_bars() %&gt;%
     add_axis('x', title=&quot;Source Type&quot;) %&gt;% add_axis('y', title=&quot;File Count&quot;)</code></pre>
-<p><div id="plot_id375049190-container" class="ggvis-output-container">
-<div id="plot_id375049190" class="ggvis-output"></div>
+<p><div id="plot_id988119321-container" class="ggvis-output-container">
+<div id="plot_id988119321" class="ggvis-output"></div>
 <div class="plot-gear-icon">
 <nav class="ggvis-control">
 <a class="ggvis-dropdown-toggle" title="Controls" onclick="return false;"></a>
 <ul class="ggvis-dropdown">
 <li>
 Renderer: 
-<a id="plot_id375049190_renderer_svg" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id375049190" data-renderer="svg">SVG</a>
+<a id="plot_id988119321_renderer_svg" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id988119321" data-renderer="svg">SVG</a>
  | 
-<a id="plot_id375049190_renderer_canvas" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id375049190" data-renderer="canvas">Canvas</a>
+<a id="plot_id988119321_renderer_canvas" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id988119321" data-renderer="canvas">Canvas</a>
 </li>
 <li>
-<a id="plot_id375049190_download" class="ggvis-download" data-plot-id="plot_id375049190">Download</a>
+<a id="plot_id988119321_download" class="ggvis-download" data-plot-id="plot_id988119321">Download</a>
 </li>
 </ul>
 </nav>
 </div>
 </div>
 <script type="text/javascript">
-var plot_id375049190_spec = {
+var plot_id988119321_spec = {
   "data": [
     {
       "name": ".0/count1/stack2",
@@ -252,7 +252,7 @@ var plot_id375049190_spec = {
   },
   "handlers": null
 };
-ggvis.getPlot("plot_id375049190").parseSpec(plot_id375049190_spec);
+ggvis.getPlot("plot_id988119321").parseSpec(plot_id988119321_spec);
 </script></p>
 <ul>
 <li>Top-ten file types:
@@ -283,7 +283,7 @@ round(ext_dist / sum(ext_dist), 2)</code></pre>
 <pre class="r"><code>`+` # no R source code printed cause it is written in C</code></pre>
 <pre><code>## function (e1, e2)  .Primitive(&quot;+&quot;)</code></pre>
 <p>In addition to distribution of <em>number of files</em> in R source, we can take a further look into the distribution of <em>number of lines</em> in each source type.</p>
-<pre class="r"><code># this part of script takes advantage of unix wc tool so is not portable to Windows
+<pre class="r"><code># unix only
 wc_res &lt;- sapply(srcfiles, function(x) 
     sum(as.integer(sapply(sprintf(&quot;wc -l &lt; %s&quot;, x), system, intern=TRUE))))
 round(wc_res / sum(wc_res), 2)</code></pre>
@@ -295,27 +295,27 @@ round(wc_res / sum(wc_res), 2)</code></pre>
 <pre class="r"><code>line_counts &lt;- as.data.table(wc_res, keep.rownames=TRUE)
 line_counts %&gt;% ggvis(~rn, ~wc_res) %&gt;% layer_bars() %&gt;%
     add_axis('x', title=&quot;Source Type&quot;) %&gt;% add_axis('y', title=&quot;Line Count&quot;, title_offset=60)</code></pre>
-<p><div id="plot_id842360951-container" class="ggvis-output-container">
-<div id="plot_id842360951" class="ggvis-output"></div>
+<p><div id="plot_id924662482-container" class="ggvis-output-container">
+<div id="plot_id924662482" class="ggvis-output"></div>
 <div class="plot-gear-icon">
 <nav class="ggvis-control">
 <a class="ggvis-dropdown-toggle" title="Controls" onclick="return false;"></a>
 <ul class="ggvis-dropdown">
 <li>
 Renderer: 
-<a id="plot_id842360951_renderer_svg" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id842360951" data-renderer="svg">SVG</a>
+<a id="plot_id924662482_renderer_svg" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id924662482" data-renderer="svg">SVG</a>
  | 
-<a id="plot_id842360951_renderer_canvas" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id842360951" data-renderer="canvas">Canvas</a>
+<a id="plot_id924662482_renderer_canvas" class="ggvis-renderer-button" onclick="return false;" data-plot-id="plot_id924662482" data-renderer="canvas">Canvas</a>
 </li>
 <li>
-<a id="plot_id842360951_download" class="ggvis-download" data-plot-id="plot_id842360951">Download</a>
+<a id="plot_id924662482_download" class="ggvis-download" data-plot-id="plot_id924662482">Download</a>
 </li>
 </ul>
 </nav>
 </div>
 </div>
 <script type="text/javascript">
-var plot_id842360951_spec = {
+var plot_id924662482_spec = {
   "data": [
     {
       "name": ".0/count1/stack2",
@@ -444,17 +444,17 @@ var plot_id842360951_spec = {
   },
   "handlers": null
 };
-ggvis.getPlot("plot_id842360951").parseSpec(plot_id842360951_spec);
+ggvis.getPlot("plot_id924662482").parseSpec(plot_id924662482_spec);
 </script></p>
 <p>Finally, we’ve found that <strong>only 20.09% of R source lines is written in R, and 45.2% of it is written by C, and 27.31% Fortran.</strong></p>
 </div>
 <div id="when-r-is-not-satisfying-your-need-for-speed" class="section level3">
 <h3>When R is not satisfying your need for speed…</h3>
 <ul>
-<li>It’s simple. We can write C/C++, which is usually above 10X faster than the equivalent of native R code.</li>
+<li>It’s simple. We can write R function in C/C++, which is usually above 10X faster than the equivalent of native R code.</li>
 <li>Okay. So <strong>why not just use C/C++</strong> for everything?
 <ul>
-<li>cause your programming time will explode to blow up all your potential performance gain, well, provided that you really can finish the analytic job purely in C++.</li>
+<li>cause your <em>programming time</em> will explode to blow up all your potential performance gain, well, provided that you really can finish the analytic job purely in C++.</li>
 </ul></li>
 <li>This kind of high-level / low-level trade-off is happening in any modern analytic tools.
 <ul>
@@ -465,48 +465,142 @@ ggvis.getPlot("plot_id842360951").parseSpec(plot_id842360951_spec);
 </div>
 <div id="but-writing-cc-for-r-is-painful" class="section level3">
 <h3>But writing C/C++ for R is painful</h3>
+<ul>
+<li>The traditional R API to C/C++ is talking like alien.</li>
+</ul>
 </div>
 <div id="here-comes-rcpp" class="section level3">
 <h3>Here comes <code>Rcpp</code></h3>
 <ul>
 <li>What is <code>Rcpp</code>?
 <ul>
-<li>A library for R <span class="citation">(Eddelbuettel and Francois 2011)</span> to build a more manageble interface between R and its C API, so that users are more easy to write C++ function for their R program.</li>
+<li>A library for R <span class="citation">(Eddelbuettel and Francois 2011)</span> to build a more manageble API for integrating R and C++, so that users are more easy to write function in C++ to speed up their R program.</li>
+<li>It provides <em>syntax sugar</em> so that the coding is less like C++ programing and more like R programing. Indeed it becomes something in-between.</li>
+</ul></li>
+<li>Usefule resources:
+<ul>
+<li><a href="https://github.com/RcppCore/Rcpp">Rcpp Github page</a></li>
+<li><a href="http://www.rcpp.org">Rcpp website</a></li>
 </ul></li>
 </ul>
 </div>
-<div id="example-n-gram-generation" class="section level3">
-<h3>Example: n-gram generation</h3>
-<pre class="r"><code>library(Rcpp)
-cppFunction('CharacterVector generateNgramHexSequence (CharacterVector hexvector, int ngram) {
-    int len = hexvector.size() - (ngram - 1);
-    CharacterVector out(len);
-    for (int i = 0; i &lt; len; i++) {
-        out(i) = hexvector[i];
-        for (int j = 1; j &lt; ngram; j++) {
-            out(i) += hexvector[i+j];
-        }
+<div id="example-1-n-gram-generation" class="section level3">
+<h3>Example 1: n-gram generation</h3>
+<p>Imagin you are dealing with hexdump of files and planning to use its n-gram frequency feature. Your input data may look like this:</p>
+<pre class="r"><code>samplefile &lt;- &quot;index.html&quot;
+system(sprintf(&quot;xxd -g1 %s | head&quot;, samplefile), intern=TRUE) # unix only</code></pre>
+<pre><code>##  [1] &quot;0000000: 3c 21 44 4f 43 54 59 50 45 20 68 74 6d 6c 3e 0a  &lt;!DOCTYPE html&gt;.&quot;  
+##  [2] &quot;0000010: 0a 3c 68 74 6d 6c 20 78 6d 6c 6e 73 3d 22 68 74  .&lt;html xmlns=\&quot;ht&quot; 
+##  [3] &quot;0000020: 74 70 3a 2f 2f 77 77 77 2e 77 33 2e 6f 72 67 2f  tp://www.w3.org/&quot;  
+##  [4] &quot;0000030: 31 39 39 39 2f 78 68 74 6d 6c 22 3e 0a 0a 3c 68  1999/xhtml\&quot;&gt;..&lt;h&quot; 
+##  [5] &quot;0000040: 65 61 64 3e 0a 0a 3c 6d 65 74 61 20 63 68 61 72  ead&gt;..&lt;meta char&quot;  
+##  [6] &quot;0000050: 73 65 74 3d 22 75 74 66 2d 38 22 3e 0a 3c 6d 65  set=\&quot;utf-8\&quot;&gt;.&lt;me&quot;
+##  [7] &quot;0000060: 74 61 20 68 74 74 70 2d 65 71 75 69 76 3d 22 43  ta http-equiv=\&quot;C&quot; 
+##  [8] &quot;0000070: 6f 6e 74 65 6e 74 2d 54 79 70 65 22 20 63 6f 6e  ontent-Type\&quot; con&quot; 
+##  [9] &quot;0000080: 74 65 6e 74 3d 22 74 65 78 74 2f 68 74 6d 6c 3b  tent=\&quot;text/html;&quot; 
+## [10] &quot;0000090: 20 63 68 61 72 73 65 74 3d 75 74 66 2d 38 22 20   charset=utf-8\&quot; &quot;</code></pre>
+<p>We firstly tidy the input to be a long character sequence…</p>
+<pre class="r"><code>hexdump &lt;- system(sprintf(&quot;xxd -g1 %s | cut -d \&quot; \&quot; -f 2-17&quot;, samplefile), intern=TRUE) # unix only
+hexdump &lt;- unlist(strsplit(paste(hexdump, collapse=' '), ' '))
+hexdump &lt;- hexdump[hexdump != '']
+str(hexdump)</code></pre>
+<pre><code>##  chr [1:1385176] &quot;3c&quot; &quot;21&quot; &quot;44&quot; &quot;4f&quot; &quot;43&quot; &quot;54&quot; &quot;59&quot; &quot;50&quot; &quot;45&quot; &quot;20&quot; &quot;68&quot; &quot;74&quot; &quot;6d&quot; &quot;6c&quot; ...</code></pre>
+<p>Then what? Try looping in native R code, which is rather straight forward.</p>
+<pre class="r"><code># first trial: use native R loop (could be terrible for large-scale processing...)
+generateNgramFreqR &lt;- function(x, n) {
+    len &lt;- length(x) - (n - 1)
+    out &lt;- character(len) # pre-allocate size, very important
+    for ( i in 1:len ) {
+        out[i] &lt;- x[i]
+        if ( n &gt; 1 )
+            for ( j in 1:(n-1) )
+                out[i] &lt;- paste0(out[i], x[i+j])
     }
-    return out;
+    unlist(as.list(sort(table(out), decreasing=TRUE)))
+}
+system.time(r_res &lt;- generateNgramFreqR(hexdump, 2))</code></pre>
+<pre><code>##    user  system elapsed 
+##   8.054   0.172   8.617</code></pre>
+<pre class="r"><code>r_res[1:10]</code></pre>
+<pre><code>##   2532   2533   3245   3243   3239   3238   2537   3230   3925   3344 
+## 136620  38550  23642  19963  18367  18317  18236  18218  17693  16679</code></pre>
+<p>Or we can use some external library about text mining.</p>
+<pre class="r"><code># second trial: use external library
+generateNgramFreqTau &lt;- function(x, n) {
+    require(tau)
+    tau_res &lt;- textcnt(x, n=n, method=&quot;string&quot;, split=&quot;[[:space:]]+&quot;)
+    names(tau_res) &lt;- gsub(' ', '', names(tau_res))
+    sort(tau_res, decreasing=TRUE)
+}
+system.time(tau_res &lt;- generateNgramFreqTau(hexdump, 2))</code></pre>
+<pre><code>##    user  system elapsed 
+##   6.001   0.164   6.238</code></pre>
+<pre class="r"><code>tau_res[1:10]</code></pre>
+<pre><code>##   2532   2533   3245   3243   3239   3238   2537   3230   3925   3344 
+## 136620  38550  23642  19963  18367  18317  18236  18218  17693  16679</code></pre>
+<pre class="r"><code># check if the results are eqaul
+identical(tau_res, r_res)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<p>But the performance of the above two solutions are both not satisfying when it comes to large-scale problem.</p>
+<p>Now let’s try <code>Rcpp</code> to see what we could further achieve.</p>
+<pre class="r"><code># third trial: use Rcpp to write the function in C++
+library(Rcpp)
+cppFunction('
+    CharacterVector generateNgramFreq (CharacterVector hexvector, int ngram) {
+        int len = hexvector.size() - (ngram - 1);
+        CharacterVector out(len);
+        for (int i = 0; i &lt; len; i++) {
+            out(i) = hexvector[i];
+            for (int j = 1; j &lt; ngram; j++) {
+                out(i) += hexvector[i+j];
+            }
+        }
+        return out;
+    }')
+generateNgramFreq</code></pre>
+<pre><code>## function (hexvector, ngram) 
+## .Primitive(&quot;.Call&quot;)(&lt;pointer: 0x108850510&gt;, hexvector, ngram)</code></pre>
+<pre class="r"><code>generateNgramFreqCpp &lt;- function(x, n)
+    unlist(as.list(sort(table(generateNgramFreq(x, n)), decreasing=TRUE)))
+system.time(cpp_res &lt;- generateNgramFreqCpp(hexdump, 2))</code></pre>
+<pre><code>##    user  system elapsed 
+##   0.278   0.020   0.307</code></pre>
+<pre class="r"><code>cpp_res[1:10]</code></pre>
+<pre><code>##   2532   2533   3245   3243   3239   3238   2537   3230   3925   3344 
+## 136620  38550  23642  19963  18367  18317  18236  18218  17693  16679</code></pre>
+<pre class="r"><code>identical(cpp_res, r_res)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<p>Now it’s time to benchmark these solutions to see the performance difference. You’ll see that the <code>Rcpp</code> solution is above 10X faster than its alternatives. Depends on the scale of your problem such gap could be further enlarged.</p>
+<pre class="r"><code>library(microbenchmark)
+microbenchmark(generateNgramFreqR(hexdump, 2),
+               generateNgramFreqTau(hexdump, 2),
+               generateNgramFreqCpp(hexdump, 2), times=10)</code></pre>
+<pre><code>## Unit: milliseconds
+##                              expr       min        lq      mean    median        uq       max neval
+##    generateNgramFreqR(hexdump, 2) 6752.9475 7146.8828 7248.2316 7216.8662 7483.6975 7812.2075    10
+##  generateNgramFreqTau(hexdump, 2) 5041.1114 5079.8632 5453.0089 5501.6709 5721.4251 5844.0420    10
+##  generateNgramFreqCpp(hexdump, 2)  273.4568  285.6781  373.5777  344.1745  402.8767  579.8468    10</code></pre>
+<ul>
+<li>Interested? See the <a href="https://www.kaggle.com/c/malware-classification">Microsoft malware classification challenge</a></li>
+</ul>
+</div>
+<div id="example-2-moving-window-computing" class="section level3">
+<h3>Example 2: moving-window computing</h3>
+<pre class="r"><code>cppFunction('
+    NumericVector movingCount(NumericVector tindex, NumericVector dataT, NumericVector dataC, int stepsize) {
+        int n = tindex.size();
+        NumericVector out(n);
+        for (int i = 0; i &lt; n; i++) {
+            int begin = tindex[i];
+            int end = begin + stepsize;
+            NumericVector cnts = dataC[(dataT &gt;= begin) &amp; (dataT &lt; end)];
+            out(i) = sum(cnts);
+        }
+        return out;
     }')</code></pre>
 </div>
-<div id="example-moving-window-computing" class="section level3">
-<h3>Example: moving-window computing</h3>
-<pre class="r"><code>cppFunction('NumericVector movingCount_
-            (NumericVector tindex, NumericVector dataT, NumericVector dataC, int stepsize) {
-                int n = tindex.size();
-                NumericVector out(n);
-                for (int i = 0; i &lt; n; i++) {
-                    int begin = tindex[i];
-                    int end = begin + stepsize;
-                    NumericVector cnts = dataC[(dataT &gt;= begin) &amp; (dataT &lt; end)];
-                    out(i) = sum(cnts);
-                }
-            return out;
-            }')</code></pre>
-</div>
-<div id="example-ad-hoc-data.frame-operation" class="section level3">
-<h3>Example: ad-hoc data.frame operation</h3>
+<div id="example-3-ad-hoc-data.frame-operation" class="section level3">
+<h3>Example 3: ad-hoc data.frame operation</h3>
 <pre class="r"><code>cppFunction('
     NumericVector countAnythingBoundedByTime (NumericVector first, NumericVector last) {
         int len = first.size();
