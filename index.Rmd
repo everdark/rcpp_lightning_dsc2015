@@ -5,7 +5,7 @@ author:
     name: "Kyle Chung"
     affiliation: "Trend Micro, Data Scientist"
     email: "kylechun9@gmail.com"
-date: "`r format(Sys.time(), '%d %B, %Y')`"
+date: '`r format(Sys.time(), "%d %B, %Y")`<br><br><a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="img/by-nc-sa-4.0-88x31.png" /></a>'
 output: html_document
 bibliography: bibliography.bib
 ---
