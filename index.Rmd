@@ -32,17 +32,18 @@ library(stringr)
 # get all file extensions in R source code
 all_src_files <- list.files("./R-3.2.1/src/", recursive=TRUE, full.names=TRUE)
 all_ext <- str_extract(all_src_files, "\\.[a-zA-Z]+$")
-file_counts <- as.data.table(sort(table(all_ext), decreasing=TRUE)[1:10],
-                             keep.rownames=TRUE)
+file_counts <- as.data.table(sort(table(all_ext), decreasing=TRUE), keep.rownames=TRUE)
 ``` 
 
 
 ### Distribution of source file counts in R
 
-```{r plot_file_count}
+```{r plot_file_count, message=FALSE}
+library(wordcloud)
+par(mar=c(0, 0, 0, 0))
+wordcloud(file_counts$V1, file_counts$V2, min.freq=1, scale=c(7,1), rot.per=.35, random.order=F)
 library(ggvis)
-
-file_counts %>% ggvis(~reorder(V1, -V2), ~V2) %>% layer_bars() %>%
+file_counts[1:10] %>% ggvis(~reorder(V1, -V2), ~V2) %>% layer_bars() %>%
     add_axis('x', title="Source Type") %>% add_axis('y', title="File Count")
 ``` 
 
