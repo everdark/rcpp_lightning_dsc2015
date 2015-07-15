@@ -8,6 +8,8 @@ author:
 date: '`r format(Sys.time(), "%d %B, %Y")`<br><br><a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="img/by-nc-sa-4.0-88x31.png" /></a>'
 output: html_document
 bibliography: bibliography.bib
+notice: |
+    @Hornik:BuchtaLZeileis:2009
 ---
 
 ```{r setup, include=FALSE}
@@ -134,8 +136,8 @@ system(sprintf("xxd -g1 %s | head", samplefile), intern=TRUE) # unix only
 We firstly tidy the input to be a long character sequence...
 
 ```{r ex1:process_hexdump}
-hexdump <- system(sprintf("xxd -g1 %s | cut -d \" \" -f 2-17", samplefile), intern=TRUE) # unix only
-hexdump <- unlist(strsplit(paste(hexdump, collapse=' '), ' '))
+hexdumplines <- system(sprintf("xxd -g1 %s | cut -d \" \" -f 2-17", samplefile), intern=TRUE) # unix only
+hexdump <- unlist(strsplit(paste(hexdumplines, collapse=' '), ' '))
 hexdump <- hexdump[hexdump != '']
 str(hexdump)
 ```
@@ -159,7 +161,7 @@ system.time(r_res <- generateNgramFreqR(hexdump, 2))
 r_res[1:10]
 ```
 
-Or we can use some external library about text mining.
+Or we can use some external library that focuses on text mining, for example, use `tau` [@Buchta:Hornik:Feinerer:Meyer:2015].
 
 ```{r ex1:tau_solution, cache=TRUE, message=FALSE}
 # second trial: use external library
@@ -176,12 +178,36 @@ tau_res[1:10]
 identical(tau_res, r_res)
 ```
 
-But the performance of the above two solutions are both not satisfying when it comes to large-scale problem.
+But the performance of the above two solutions are both not satisfying when it comes to large-scale problem. Think about dealing with hex-dump strings from tens of thousands of files, we will need more efficient solution.
 
-Now let's try `Rcpp` to see what we could further achieve.
+Sometimes to make things better all you have to do is to find ANOTHER package that is more powerful over the probelm at hand. But still sometimes you just don't have much to choose. In this very case of generating n-grams, though there is another well-known general text mining pacakge `tm` [@Feinerer:Hornik:2015; @Feinerer:Hornik:Meyer:2008] available, it is not suitable to serve as a faster solution to our problem. Indeed, it is prohibitively slow.
+
+```{r ex1:tm_solution, cache=TRUE, message=FALSE}
+# third trial: use another external library, hopefully faster? (Nope.)
+generateNgramFreqTm <- function(x, n) {
+    require(tm)
+    op <- options(mc.cores=NULL) 
+    options(mc.cores=1)
+    on.exit(options(op))
+    
+    ngramTokenizer <- function(x) RWeka::NGramTokenizer(x, RWeka::Weka_control(min=2, max=2))
+    corp <- Corpus(VectorSource(paste(x, collapse=' ')))
+    tdm <- TermDocumentMatrix(corp, control=list(tokenize=ngramTokenizer))
+    res <- rowSums(as.matrix(tdm))
+    names(res) <- gsub(' ', '', names(res))
+    sort(res, decreasing=TRUE)
+}
+
+# full-size input not run, too slow
+length(hexdumplines)
+system.time(tm_res <- generateNgramFreqTm(hexdumplines[1:10000], 2))
+tm_res[1:10]
+```
+
+Let's try `Rcpp` to see what we could further achieve.
 
 ```{r ex1:cpp_solution, cache=TRUE}
-# third trial: use Rcpp to write the function in C++
+# final trial: use Rcpp to write the function in C++
 library(Rcpp)
 cppFunction('
     CharacterVector generateNgramFreq (CharacterVector hexvector, int ngram) {
