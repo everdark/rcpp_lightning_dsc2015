@@ -259,7 +259,7 @@ microbenchmark(generateNgramFreqR(hexdump, 2),
 
 Move on to the next case. Suppose you'd like to monitor the system logs in your computer, counting the process that triggers logging in a sliding-window manner.
 
-```{r ex2: print_syslog}
+```{r ex2:print_syslog}
 syslogname <- "system.log" # this is for Mac, for Linux you may use "syslog" instead
 syslogs <- grep(syslogname, dir("/var/log", full.names=TRUE), value=TRUE)
 loglines <- unlist(lapply(syslogs, 
@@ -273,7 +273,7 @@ head(loglines)
 
 Here we use regex to extract fields we are intereted, convert datetime character to POSIX time object, and take a look at the top distributed categories of process names.
 
-```{r ex2: process_syslog}
+```{r ex2:process_syslog}
 logdat <- as.data.table(str_match(loglines, "(^.*[0-9]+ [0-9]{2}:[0-9]{2}:[0-9]{2})([^:]+:)")[,2:3])
 setnames(logdat, c("ts", "cate"))
 logdat[, `:=`(cate=str_match(cate, " ([a-zA-Z]+)\\[[0-9]+\\]")[,2],
@@ -287,7 +287,7 @@ sort(table(logdat$cate), decreasing=TRUE)[1:10]
 
 Suppose the task is to count number of records for each process within the last 5 minutes for every 1 minute. This is a moving-window operation which could be painful should you use pure R code to solve it. Of course there are dedicated packages aiming at this kind of task but again for this very case none of them to my best knowledge could work efficently.
 
-```{r ex2: r_solution1, cache=TRUE}
+```{r ex2:r_solution1, cache=TRUE}
 # first trial: again, naive approach first
 movingWindowCountR <- function(DT, wsize, interval, select=NULL) {
     require(data.table)
@@ -313,7 +313,7 @@ system.time(r_res <- movingWindowCountR(logdat, 300, 60, c("kernel", "discoveryd
 
 Let's plot the moving-window-count time series for process "kernel".
 
-```{r ex2: plot}
+```{r ex2:plot}
 kernel_mvcnt <- data.table(count=r_res[["kernel"]])
 kernel_mvcnt[, t:=1:.N]
 kernel_mvcnt %>% ggvis(~t, ~count) %>% layer_lines()
@@ -323,7 +323,7 @@ The bottleneck is, of course, at the loop code. R is not good at explicit loopin
 
 But before that, let's struggle a little bit more.
 
-```{r ex2: r_solution2, cache=TRUE}
+```{r ex2:r_solution2, cache=TRUE}
 # second trial: play tricky
 movingWindowCountR2 <- function(DT, wsize, interval, select=NULL) {
     require(data.table)
@@ -348,7 +348,7 @@ identical(r_res[["kernel"]], r2_res[["kernel"]])
 
 Our second solution is considerably faster, though little bit harder to code and maintain. What if we simply re-write the loop in the first solution in `Rcpp`? 
 
-```{r ex2: rcpp_solution, cache=TRUE}
+```{r ex2:rcpp_solution, cache=TRUE}
 # final trial
 cppFunction('
     NumericVector movingWindowCount(NumericVector ts, int wsize, int interval, int sts, int nt) {
@@ -385,7 +385,7 @@ microbenchmark(do.call(movingWindowCountR, xargs),
 
 At the benchmark of only processing a small number of processes, solution 2 may outperform `Rcpp` solution. Nevertheless, the latter *scales* considerably greater. Let's further examine this point. (It all depends on your machine. For example on my MacBook 12" solution 2 is faster overall at 2 processes but on my MacBook Pro 13" the `Rcpp` solution constantly outperform the others.) 
 
-```{r ex2: scale_benchmark, cache=TRUE}
+```{r ex2:scale_benchmark, cache=TRUE}
 allcate <- unique(logdat$cate)
 nround <- 20
 elapsed_r2 <- numeric(nround)
@@ -403,7 +403,7 @@ for ( i in 1:nround ) {
 }
 ```
 
-```{r ex2: plot_benchmark}
+```{r ex2:plot_benchmark}
 bres <- rbind(data.table(n=1:nround, t=elapsed_r2, alg="r2"), 
               data.table(n=1:nround, t=elapsed_rcpp, alg="rcpp"))
 bres %>% ggvis(~n, ~t, fill=~alg) %>% layer_points() %>% 
@@ -419,7 +419,7 @@ As you can see, the `Rcpp` solution is already remnarkably fast in fair-sized pr
 
 There are other cases that you found solutions of existing packages lacking efficiency. That's assume an MOOC-like student-course activity log in a simplist format. We log all activities for all students in all courses with timestamp. (Assume 26 courses in total, marked by English letters. Students are indexed by inremental integers.)
 
-```{r, ex3: prepare_sample_data}
+```{r, ex3:prepare_sample_data}
 # generate a simulated data as our playground
 genSimData <- function(nlog, nuser, seed) {
     set.seed(seed)
@@ -439,7 +439,7 @@ simlog
 
 Now based on such dataset, assume we'd like to extract a feature: *How many courses in total did a student registered at the time of his/her last activity record for each course*? For example, if student 1's last activity for course a is today, then how many courses in total (including course a) did she also have at least one activity records?
 
-```{r, ex3: naive_approach, cache=TRUE}
+```{r, ex3:naive_approach, cache=TRUE}
 adHocOperateR <- function(DT) {
     require(data.table)
     DT <- copy(DT)
@@ -461,7 +461,7 @@ res_r1[sample(nrow(res_r1), 10)]
 
 The naive approach scales well in `nlog` but not in `nuser` cause the latter impacts how many loops actually run in our solution. Relying only on `data.table`, can we improve? The anwser is yes. The following solution use the so-called *"grouping by each i"* technique to drastically improve performance.
 
-```{r ex3: smart_approach, cache=TRUE}
+```{r ex3:smart_approach, cache=TRUE}
 # let's utilizing data.table bitter
 adHocOperateR2 <- function(DT) {
     require(data.table)
@@ -482,7 +482,7 @@ identical(res_r1, res_r2)
 
 Time for `Rcpp`. Is it possible to be even faster?
 
-```{r ex3: rcpp_solution}
+```{r ex3:rcpp_solution}
 cppFunction('
     NumericVector adHocOperate (NumericVector first, NumericVector last) {
         int len = first.size();
@@ -514,7 +514,7 @@ identical(res_cpp, res_r1)
 
 Well, the result suggests that `Rcpp` solution performs fairly equal to the `data.table` solution. Indeed the former is a little bit slower in our particular trial run. Time to inspect the scalability issue.
 
-```{r ex3: benchmark, cache=TRUE}
+```{r ex3:benchmark, cache=TRUE}
 # make the data bigger
 simlog <- genSimData(nlog=1e7, nuser=1e4, seed=528491)
 microbenchmark(adHocOperateR2(simlog),
