@@ -5,18 +5,29 @@ author:
     name: "Kyle Chung"
     affiliation: "Trend Micro, Data Scientist"
     email: "kylechun9@gmail.com"
+    website: "test.com"
 date: '`r format(Sys.time(), "%d %B, %Y")`<br><br><a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="img/by-nc-sa-4.0-88x31.png" /></a>'
-output: html_document
+output: 
+    html_document:
+        toc: false
+        theme: united
 bibliography: bibliography.bib
 notice: |
     @Dowle:Short:Lianoglou:Srinivasan
     @Wickham:2015
     @Hornik:BuchtaLZeileis:2009
+abstract: This is the abstract.
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(cache=FALSE)
 options(width=120)
+library(data.table)
+library(stringr)
+library(wordcloud)
+library(ggvis)
+library(Rcpp)
+library(microbenchmark)
 ```
 
 ----------------------
@@ -372,7 +383,7 @@ microbenchmark(do.call(movingWindowCountR, xargs),
                times=3)
 ```
 
-At the benchmark of only processing two processes, solution 2 seems to outperform `Rcpp` solution. But the latter *scales* considerably greater. Let's further examine this point.
+At the benchmark of only processing a small number of processes, solution 2 may outperform `Rcpp` solution. Nevertheless, the latter *scales* considerably greater. Let's further examine this point. (It all depends on your machine. For example on my MacBook 12" solution 2 is faster overall at 2 processes but on my MacBook Pro 13" the `Rcpp` solution constantly outperform the others.) 
 
 ```{r ex2: scale_benchmark, cache=TRUE}
 allcate <- unique(logdat$cate)
@@ -406,15 +417,74 @@ As you can see, the `Rcpp` solution is already remnarkably fast in fair-sized pr
 
 ### Example 3: ad-hoc data.frame operation
 
-There are other cases that you found solutions of existing packages lacking efficiency.
-```{r, ex3:}
+There are other cases that you found solutions of existing packages lacking efficiency. That's assume an MOOC-like student-course activity log in a simplist format. We log all activities for all students in all courses with timestamp. (Assume 26 courses in total, marked by English letters. Students are indexed by inremental integers.)
 
+```{r, ex3: prepare_sample_data}
+# generate a simulated data as our playground
+genSimData <- function(nlog, nuser, seed) {
+    set.seed(seed)
+    dat <- data.table(user=sample(1:nuser, nlog, replace=TRUE, 
+                                  prob=rbeta(1:nuser, .1, 2)),
+                      course=sample(letters, nlog, replace=TRUE, prob=1:26),
+                      ts=runif(nlog, as.integer(as.POSIXct("2015-01-01")),
+                               as.integer(as.POSIXct("2015-06-30"))))
+    dat[, t:=as.POSIXct(ts, origin="1970-01-01")]
+    setorder(dat, user, course, ts)
+    dat
+}
 
+simlog <- genSimData(nlog=1e6, nuser=1e3, seed=528491)
+simlog
 ```
 
-```{r ex3: rcpp_solution, cache=TRUE}
+Now based on such dataset, assume we'd like to extract a feature: *How many courses in total did a student registered at the time of his/her last activity record for each course*? For example, if student 1's last activity for course a is today, then how many courses in total (including course a) did she also have at least one activity records?
+
+```{r, ex3: naive_approach, cache=TRUE}
+adHocOperateR <- function(DT) {
+    require(data.table)
+    DT <- copy(DT)
+    DT[, `:=`(tsmin=min(ts), tsmax=max(ts)), by="user,course"]
+    DT <- unique(DT[, list(user, course, tsmin, tsmax)])
+    res <- integer()
+    for ( i in unique(DT$user) ) {
+        tmpdat <- DT[user == i]
+        for ( j in tmpdat$course ) {
+            res <- c(res, sum(tmpdat$tsmin <= tmpdat[course == j, tsmax]))
+        }
+    }
+    cbind(DT[, list(user, course)], res)
+}
+
+system.time(res_r1 <- adHocOperateR(simlog))
+res_r1[sample(nrow(res_r1), 10)]
+```
+
+The naive approach scales well in `nlog` but not in `nuser` cause the latter impacts how many loops actually run in our solution. Relying only on `data.table`, can we improve? The anwser is yes. The following solution use the so-called *"grouping by each i"* technique to drastically improve performance.
+
+```{r ex3: smart_approach, cache=TRUE}
+# let's utilizing data.table bitter
+adHocOperateR2 <- function(DT) {
+    require(data.table)
+    DT <- copy(DT)
+    DT[, `:=`(tsmin=min(ts), tsmax=max(ts)), by="user,course"]
+    tmpdat1 <- unique(DT[, list(user, course, tsmin)])
+    tmpdat2 <- unique(DT[, list(user, course, tsmax)])
+    setkey(tmpdat1, user)
+    setkey(tmpdat2, user)
+    cbind(tmpdat1[, list(user, course)], 
+          res=tmpdat1[tmpdat2, list(res=sum(tsmin <= tsmax)), by=.EACHI][, res])
+}
+system.time(res_r2 <- adHocOperateR2(simlog))
+
+setkey(res_r1, user)
+identical(res_r1, res_r2)
+```
+
+Time for `Rcpp`. Is it possible to be even faster?
+
+```{r ex3: rcpp_solution}
 cppFunction('
-    NumericVector countAnythingBoundedByTime (NumericVector first, NumericVector last) {
+    NumericVector adHocOperate (NumericVector first, NumericVector last) {
         int len = first.size();
         NumericVector out(len);
         for (int i = 0; i < len; i++) {
@@ -427,12 +497,37 @@ cppFunction('
         }
         return out;
     }')
+
+adHocOperateCpp <- function(DT) {
+    require(data.table)
+    DT <- copy(simlog)
+    DT[, `:=`(tsmin=min(ts), tsmax=max(ts)), by="user,course"]
+    DT <- unique(DT[, list(user, course, tsmin, tsmax)])
+    cbind(DT[, list(user, course)],
+          res=as.integer(DT[, list(res=adHocOperate(.SD$tsmin, .SD$tsmax)), by="user"][, res]))
+}
+
+system.time(res_cpp <- adHocOperateCpp(simlog))
+setkey(res_cpp, user)
+identical(res_cpp, res_r1)
 ```
+
+Well, the result suggests that `Rcpp` solution performs fairly equal to the `data.table` solution. Indeed the former is a little bit slower in our particular trial run. Time to inspect the scalability issue.
+
+```{r ex3: benchmark, cache=TRUE}
+# make the data bigger
+simlog <- genSimData(nlog=1e7, nuser=1e4, seed=528491)
+microbenchmark(adHocOperateR2(simlog),
+               adHocOperateCpp(simlog), 
+               times=10)
+```
+
+Finally, the `Rcpp` solution still outperforms, but not in so much advantage. The `data.table` solution did a fairly good job. The reason is not surprising: `data.table` itself is largely written in C. 
 
 
 ### Appendix
 
-```{r}
+```{r sessionInfo}
 sessionInfo()
 ```
 
