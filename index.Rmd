@@ -383,7 +383,7 @@ microbenchmark(do.call(movingWindowCountR, xargs),
                times=3)
 ```
 
-At the benchmark of only processing a small number of processes, solution 2 may outperform `Rcpp` solution. Nevertheless, the latter *scales* considerably greater. Let's further examine this point. (It all depends on your machine. For example on my MacBook 12" solution 2 is faster overall at 2 processes but on my MacBook Pro 13" the `Rcpp` solution constantly outperform the others.) 
+At the benchmark of only processing a small number of processes, solution 2 may outperform `Rcpp` solution. Nevertheless, the latter *scales* considerably greater. Let's further examine this point. (It all depends on your machine. For example on my MacBook 12" solution 2 is faster overall at 2 processes but on my MacBook Pro 13" the `Rcpp` solution constantly outperforms the others.) 
 
 ```{r ex2:scale_benchmark, cache=TRUE}
 allcate <- unique(logdat$cate)
@@ -417,7 +417,7 @@ As you can see, the `Rcpp` solution is already remnarkably fast in fair-sized pr
 
 ### Example 3: ad-hoc data.frame operation
 
-There are other cases that you found solutions of existing packages lacking efficiency. That's assume an MOOC-like student-course activity log in a simplist format. We log all activities for all students in all courses with timestamp. (Assume 26 courses in total, marked by English letters. Students are indexed by inremental integers.)
+There are other cases that you found solutions of existing packages lacking efficiency. That's assume an MOOC-like student-course activity log in a simplist format. We log all activities for all students in all courses with timestamp. (Assume 26 courses in total, marked by English letters. Students are indexed by incremental integers.)
 
 ```{r, ex3:prepare_sample_data}
 # generate a simulated data as our playground
@@ -434,12 +434,15 @@ genSimData <- function(nlog, nuser, seed) {
 }
 
 simlog <- genSimData(nlog=1e6, nuser=1e3, seed=528491)
-simlog
+head(simlog)
 ```
 
-Now based on such dataset, assume we'd like to extract a feature: *How many courses in total did a student registered at the time of his/her last activity record for each course*? For example, if student 1's last activity for course a is today, then how many courses in total (including course a) did she also have at least one activity records?
+Now based on such dataset, assume we'd like to extract a feature: *How many courses in total did a student register at the time of his/her last activity record for each course*? For example, if student 1's last activity for course a is today, then how many courses in total (including course a) did she also have at least one activity records?
+
+This problem requires a some-how twisted by-group operation on data.frame, and hence could be challenging if the scale is huge.
 
 ```{r, ex3:naive_approach, cache=TRUE}
+# naive apporach first
 adHocOperateR <- function(DT) {
     require(data.table)
     DT <- copy(DT)
@@ -512,7 +515,7 @@ setkey(res_cpp, user)
 identical(res_cpp, res_r1)
 ```
 
-Well, the result suggests that `Rcpp` solution performs fairly equal to the `data.table` solution. Indeed the former is a little bit slower in our particular trial run. Time to inspect the scalability issue.
+Well, the result suggests that `Rcpp` solution performs fairly equal to the `data.table` solution. Time to inspect the scalability issue.
 
 ```{r ex3:benchmark, cache=TRUE}
 # make the data bigger
@@ -523,6 +526,8 @@ microbenchmark(adHocOperateR2(simlog),
 ```
 
 Finally, the `Rcpp` solution still outperforms, but not in so much advantage. The `data.table` solution did a fairly good job. The reason is not surprising: `data.table` itself is largely written in C. 
+
+Here is the take-a-way from the 3rd example: when performance is the key factor in your computing job and you find yourself facing severe performance bottleneck, you either rewrite the key operaion part of your code in `Rcpp` or you choose a package that is written in C and hopefully can solve your problem. To be a more independent data analyst, it is really worth learning `Rcpp`. As you can see in the above three examples, sometimes it only takes a little simple coding and your task will be done in lightning fast.
 
 
 ### Appendix
